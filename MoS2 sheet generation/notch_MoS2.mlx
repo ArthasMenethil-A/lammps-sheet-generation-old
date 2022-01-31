@@ -1,0 +1,49 @@
+datafile = importdata('D:\MATLAB documents\lammps data processing\notch in graphene sheet\data.txt')
+atoms = 1050;
+
+
+% finding the boundaries of the sheet
+
+x_max = max(datafile.data(1:atoms, 3));
+x_min = min(datafile.data(1:atoms, 3));
+y_max = max(datafile.data(1:atoms, 4));
+y_min = min(datafile.data(1:atoms, 4));
+% finding the middle of the sheet
+
+% x_mid = (x_max - x_min)/2;
+y_mid = (y_max - y_min)/2
+
+% r_notch = input("please enter the radius of the notch (nm) \n");
+% l_notch = input("please enter the length of the notch (nm) \n");
+r = 5;
+l = 10;
+
+% the notch center placed on the y = y_mid and x = 0
+theta1 = atan((l^2 - r^2)^0.5/l);
+a1 = r*sin(theta1)/(r*cos(theta1) - l);
+b1 = -a1*l;
+a2 = -a1;
+b2 = -b1;
+x1 = r*cos(theta1);
+x2 = x1;
+
+id_array = [];
+for id = 1:atoms
+    
+    x = datafile.data(id ,3);
+    y = datafile.data(id ,4);
+
+    if (x <= r*cos(theta1)) && ((y <=  y_mid + (r^2 - x^2)^0.5) && (y >= y_mid - (r^2 - x^2)^0.5))
+        id_array = [id_array, id];
+        
+    elseif (x >= r*cos(theta1)) && (x <= l) && (y >= a2*x2 + b2 + y_mid) && (y <= a1*x1 + b1 + y_mid)
+        id_array = [id_array, id];
+        
+    end
+end
+
+datafile.data(id_array, :) = []
+
+save("data_notched.txt", '-struct', "datafile")
+
+"all done!"
